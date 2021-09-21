@@ -1,0 +1,46 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AbilityHolder : MonoBehaviour
+{
+    // Start is called before the first frame update
+
+    public SkillTemplate skill;
+
+    public List<SkillTemplate> skillList;
+    public KeyCode keyBinding;
+    public PlayerClass player;
+    public int skillIndexLoaded;
+    void Update()
+    {   
+        // if keybind is triggered and the list of skills is not empty or null, trigger the current loaded abilty 
+        if ((Input.GetKeyDown(keyBinding) & (skillList != null || skillList.Count != 0)))
+        {   
+            skillList[skillIndexLoaded].Active(player);
+        }
+
+
+    }
+
+    public AbilityHolder()
+    {
+
+    }
+    public void RefreshAllSkillChagres(){
+        for(var i =0; i< skillList.Count; i++){
+            skillList[i].refillCharges();
+
+
+        }
+    }
+
+    public void SwitchCurrentLoadedAbility(SkillTemplate skillToFind)
+    {
+         skillIndexLoaded = skillList.FindIndex(item => item.skillName == skillToFind.skillName);        
+
+
+    }
+    // Update is called once per frame
+
+}

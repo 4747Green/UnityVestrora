@@ -1,0 +1,361 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Linq;
+using System;
+public class CombatHandler : MyManagerBehavior
+{
+    private bool combatActiveVariable = false;
+    public CombatState State = CombatState.NoCombat;
+    public CombatRoundHandler roundCounter;
+    public static CombatHandler Instance;
+
+    public static event Action<CombatState> OnCombatStateChanged;
+    private void Awake()
+    {
+        Instance = this;
+        State = CombatState.NoCombat;
+    }
+    private void Start()
+    {
+        State = CombatState.NoCombat;
+
+    }
+
+    public void UpdateCombatState(CombatState newState)
+    {
+        State = newState;
+        switch (newState)
+        {
+            case CombatState.CombatHandlerState:
+                HandleCombatHandlerState();
+                Debug.Log("handler");
+                break;
+            case CombatState.Decider:
+                Debug.Log("Decider");
+
+                HandleDeciderState();
+                break;
+            case CombatState.PlayerTurn:
+                HandlePlayerTurn();
+                break;
+
+            case CombatState.EnemyTurn:
+                HandleEnemyTurn();
+                break;
+
+            case CombatState.Victory:
+                HandleVictory();
+                break;
+
+            case CombatState.Lose:
+                HandleLose();
+                break;
+            case CombatState.NoCombat:
+                HandleNoCombat();
+                break;
+
+            case CombatState.MidTurn:
+                break;
+
+            default:
+                break;
+        }
+
+        OnCombatStateChanged?.Invoke(newState);
+    }
+
+    public void HandleCombatHandlerState()
+    {
+        // check if combat is active, if not innitlize combat
+        // else update to decider
+        if (!combatActiveVariable)
+        {
+            SetUpInnitalRoundOfCombat();
+            HandleCombatHandlerState();
+        }
+        else
+        {
+            UpdateCombatState(CombatState.Decider);
+        }
+
+    }
+
+    public void HandlePlayerTurn()
+    {
+
+        UpdateCurrentTurnCharacterForCombatTurn(true);
+        UpdateCombatState(CombatState.MidTurn);
+    }
+    public void HandleEnemyTurn()
+    {
+        UpdateCurrentTurnCharacterForCombatTurn(true);
+        CallSimpleAIScript();
+        UpdateCombatState(CombatState.MidTurn);
+    }
+    public void CallSimpleAIScript()
+    {
+        GetCurrentTurnCharacterGameObject().GetComponent<SimpleEnemyCombatScript>().FindAndSetPlayerAsTarget();
+
+        GetCurrentTurnCharacterGameObject().GetComponent<SimpleEnemyCombatScript>().CombatTurnAction();
+
+    }
+    public void HandleVictory()
+    {
+        Debug.Log("Victory");
+        CallToWipeUIClean();
+        UpdateCombatState(CombatState.NoCombat);
+
+
+    }
+    public void HandleLose()
+    {
+        Debug.Log("Lost");
+        CallToWipeUIClean();
+        UpdateCombatState(CombatState.NoCombat);
+    }
+    public void HandleNoCombat()
+    {
+
+        ResetCharactersInCombat();
+
+
+        SetCombatActiveVariable(false);
+
+        ResetAllCombatData();
+        ResetAllCombatUI();
+
+    }
+    public void HandleDeciderState()
+    {
+        Debug.Log("Decider");
+
+        if (CheckIfAllEnemiesAreDead())
+        {
+            UpdateCombatState(CombatState.Victory);
+
+        }
+        else if (CheckIfAllPlayersAreDead())
+        {
+            UpdateCombatState(CombatState.Lose);
+        }
+        else if (IsCurrentTurnStillGoing())
+        {
+            UpdateCombatState(CombatState.MidTurn);
+        }
+        else
+        {
+
+            ProcessTurn();
+        }
+
+
+
+    }
+
+
+    public void ProcessTurn()
+    {
+        SetNextInLineCharacterToCurrentTurn();
+
+        this.roundCounter.ProcessTurn();
+        // Draws all, turn count update is called after as its innitlized on SetUpInnitalRoundOfCombat()
+        RefillQueueAfterEachRound();
+        CallToUpdateCurrentUI();
+
+
+        UpdateCombatState(GetTurnState());
+        
+    }
+
+    public void RefillQueueAfterEachRound()
+    {
+        if(this.roundCounter.NewRound()){
+            combatSystemHandler.RefillQueue(1);
+        }
+    }
+
+    public bool IsCurrentTurnStillGoing()
+    {
+        if (combatSystemHandler.IsCurrentCharacterTurnSet())
+        {
+            return GetCurrentTurnCharacterGameObject().GetComponent<PlayerCombat>().IsTurnInProgress();
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public void ResetCharactersInCombat()
+    {
+        foreach (var item in combatSystemHandler.combatHolder.charactersInCombat)
+        {
+            //   item.GetComponent<PlayerCombat>().UpdatPlayerState(PlayerCombat.PlayerCombatState.NoCombat);
+        }
+    }
+
+
+
+
+
+    public bool CheckWinLoseCondition()
+    {
+        if (CheckIfAllEnemiesAreDead())
+        {
+            return true;
+
+        }
+        else if (CheckIfAllPlayersAreDead())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool CheckIfAllEnemiesAreDead()
+    {
+        return combatSystemHandler.DeathCheckEnemies();
+    }
+    public bool CheckIfCharacterIsDead(GameObject character)
+    {
+        return combatSystemHandler.CheckIfCharacterIsDead(character);
+    }
+
+    public bool CheckIfAllPlayersAreDead()
+    {
+        return combatSystemHandler.DeathCheckPlayers();
+    }
+
+    // references PlayerCombat directly on the obj
+    public void UpdateCurrentTurnCharacterForCombatTurn(bool state)
+    {
+        GetCurrentTurnCharacterGameObject().GetComponent<PlayerCombat>().CharacterTurn();
+    }
+
+    // Dequeues turn order
+    public void SetNextInLineCharacterToCurrentTurn()
+    {
+        combatSystemHandler.SetCurrentCharacterTurn();
+
+    }
+
+    public CombatState GetTurnState()
+    {
+
+        if (combatSystemHandler.IsThisCharacterAPlayer(GetCurrentTurnCharacterGameObject()))
+        {
+            Debug.Log("PlayerTurn");
+            return CombatState.PlayerTurn;
+        }
+        else
+        {
+            Debug.Log("em");
+            return CombatState.EnemyTurn;
+        }
+    }
+
+    public GameObject GetCurrentTurnCharacterGameObject()
+    {
+        return combatSystemHandler.GetCurrentCharacterTurn();
+
+
+    }
+
+
+    public void AddRoundOfCombat()
+    {
+
+    }
+
+
+    public void SetUpInnitalRoundOfCombat()
+    {
+        // set combat to acive
+        SetCombatActiveVariable(true);
+        // reset
+        ResetAllCombatData();
+        ResetAllCombatUI();
+
+        // reset classes
+        // Build Round Handler
+        this.roundCounter = new CombatRoundHandler(combatSystemHandler.GetNumberOfCharactersInCombat());
+
+        // Build combat 
+        combatSystemHandler.InitializeAndFillSortedOrderListAndTurnOrderQueue();
+
+
+        // UpdatePlayers
+        combatSystemHandler.AddCharacterInCombatToPlayerOrEnemyList();
+
+
+    }
+
+    public void SetCombatActiveVariable(bool state)
+    {
+        combatActiveVariable = state;
+    }
+    public bool GetCombatActiveVariable()
+    {
+        return combatActiveVariable;
+    }
+
+    public void ResetAllCombatData()
+    {
+        combatSystemHandler.ClearData();
+
+    }
+
+    public void ResetAllCombatUI()
+    {
+
+    }
+
+    public void CallToWipeUIClean()
+    {
+        UIManager.Instance.SetActiveStateOfCombatUI(false);
+        UIManager.Instance.WipeQueueDrawing();
+    }
+    public void CallToChangeEnableStatusOfCombatUI()
+    {
+
+    }
+
+
+    public void CallToUpdateCurrentUI()
+    {
+
+        UIManager.Instance.WipeQueueDrawing();
+        UIManager.Instance.UpdateCurrentTurnUI();
+        UIManager.Instance.DrawQueue();
+        UIManager.Instance.UpdateTurnCounter();
+        UIManager.Instance.SetActiveStateOfCombatUI(true);
+    }
+    public void CallToUpdateCurrentTurnUI()
+    {
+
+
+    }
+    public void CallToUpdateQueueUI()
+    {
+
+
+    }
+    public enum CombatState
+    {
+        CombatHandlerState,
+        Decider,
+        PlayerTurn,
+        EnemyTurn,
+        Victory,
+        Lose,
+        NoCombat,
+        MidTurn
+
+    }
+
+
+}
+
