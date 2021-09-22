@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
-    public class CombatManagerData : MyManagerBehavior
+public class CombatManagerData : MyManagerBehavior
 {
 
     private GameObject currentCharacterTurn;
@@ -13,19 +13,23 @@ using System;
     public List<GameObject> enemyCharactersInCombat;
     public List<GameObject> playerCharactersInCombat;
     public SortedList<int, GameObject> sortedTurnOrderList = new SortedList<int, GameObject>();
-
-    [System.NonSerialized]
-    public int round =1;
     
+    public List<GameObject> charactersWhoDied;
     [System.NonSerialized]
-    public int turn =1;
+    public int round = 1;
 
-    public void TurnIncrease(){
+    [System.NonSerialized]
+    public int turn = 1;
 
-        turn++;
-        if(turn >= charactersInCombat.Count){
+    public void TurnIncrease()
+    {
+
+        turn++; 
+        if (turn > charactersInCombat.Count)
+        {
             turn = 1;
             round++;
+            RefillQueue();
         }
     }
     public int GetNumberOfCharactersInCombat()
@@ -36,17 +40,20 @@ using System;
     {
         return turnOrderQueue;
     }
-
+        public List<GameObject> GetCharactersInCombat()
+    {
+        return charactersInCombat;
+    }
     public bool IsThisCharacterAPlayer(GameObject character)
     {
         return character.GetComponent<PlayerCombat>().IsHeroPlayer();
     }
     public void DequeueTurnOrder()
     {
-     
-        
+
+
         currentCharacterTurn = turnOrderQueue.Dequeue();
-         
+
 
 
     }
@@ -55,7 +62,7 @@ using System;
         FillSortedTurnOrderList();
         FillQueue(numberOfTurnsToQueueFor);
     }
-    public void RefillQueue(int turnsToRefillBy)
+    public void RefillQueue()
     {
 
         FillQueue(1);
@@ -112,7 +119,33 @@ using System;
         return currentCharacterTurn;
     }
 
+    public void RemoveFromCombat(GameObject character)
+    {
 
+        charactersInCombat.Remove(character);
+        enemyCharactersInCombat.Remove(character);
+        playerCharactersInCombat.Remove(character);
+
+        int index =sortedTurnOrderList.IndexOfValue(character);
+       
+        sortedTurnOrderList.RemoveAt(index);
+
+
+        turnOrderQueue.Clear();
+        FillQueue(numberOfTurnsToQueueFor);
+        charactersWhoDied.Add(character);
+
+    }
+
+    public static bool IsEmpty<T>(List<T> list)
+    {
+        if (list == null)
+        {
+            return true;
+        }
+
+        return !list.Any();
+    }
 
 
 
@@ -121,38 +154,32 @@ using System;
 
     public bool DeathCheckPlayers()
     {
-        int charactersDead = 0;
-        foreach (var item in playerCharactersInCombat)
-        {
-            if (item.GetComponent<PlayerClass>().GetCurrentHP() <= 0)
-            {
-                charactersDead++;
-            }
-            else
-            {
-                return false;
-            }
 
+        bool isEmpty = IsEmpty(playerCharactersInCombat);
+
+        if (isEmpty)
+        {
+            return true;
         }
-        return true;
+        else
+        {
+            return false;
+        }
     }
+
     public bool DeathCheckEnemies()
     {
-        int charactersDead = 0;
-        foreach (var item in enemyCharactersInCombat)
+        bool isEmpty = IsEmpty(enemyCharactersInCombat);
+        if (isEmpty)
         {
-            if (item.GetComponent<PlayerClass>().GetCurrentHP() <= 0)
-            {
-                charactersDead++;
-            }
-            else
-            {
-                return false;
-            }
-
+            return true;
+        }
+        else
+        {
+            return false;
         }
 
-        return true;
+
     }
 
     public void ClearData()

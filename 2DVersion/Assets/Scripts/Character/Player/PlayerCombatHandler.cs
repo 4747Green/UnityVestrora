@@ -6,7 +6,6 @@ public class PlayerCombatHandler
 {
     // Start is called before the first frame update
     private bool turnInProcess = false;
-    public bool inCombat = false;
     private bool myTurn = false;
     private bool actionTaken = false;
     private bool AllowedToAct = false;
@@ -15,58 +14,58 @@ public class PlayerCombatHandler
     public PlayerCombatState State;
     public PlayerCombat playerCombat;
 
-
-    public GameObject myCharacter;
     public event Action OnEndTurn;
 
+    // Event Trigger From Combat Manager On NewTurn For all those in combat
+    public void CombatManagerOnCharacterTurn(GameObject character)
+    {
+        if (character.GetComponent<PlayerCombat>() == playerCombat)
+        {
 
+            // if turn is in process proceed with turn
+            if (!turnInProcess)
+            {
+                turnInProcess = true;
+                UpdatPlayerCombatState(PlayerCombatState.SetUpPlayerTurn);
 
-    public void CombatManagerOnCharacterTurn(GameObject character){
-        Debug.Log("here");
-        if(character.GetComponent<PlayerCombat>() == playerCombat){
-                    Debug.Log("inside");
+            }
+            else
+            {
 
-            HandleCallForCharacterTurn();
+            }
         }
     }
+
     public void OnEndturn()
     {
-
+        
         OnEndTurn?.Invoke();
 
     }
 
+    public void CancelTurn()
+    {
+        myTurn = false;
+        actionTaken = true;
+        actionsEconomyThisTurn = 0;
+        AllowedToAct = false;
+        turnInProcess = false;
+        UpdatPlayerCombatState(PlayerCombatState.Neutral);
+    }
 
     public PlayerCombatHandler(int actionEcon, PlayerCombat playerCombat)
     {
-         CombatManager.OnCharacterTurn += CombatManagerOnCharacterTurn;
+        CombatManager.OnCharacterTurn += CombatManagerOnCharacterTurn;
+        CombatManager.OnCharacterCallToEndTurn += CancelTurn;
 
         actionsEconomyOfPlayer = actionEcon;
         this.playerCombat = playerCombat;
         UpdatPlayerCombatState(PlayerCombatState.Neutral);
-     
+
 
     }
 
 
-
-
-    public void HandleCallForCharacterTurn()
-    {                    Debug.Log("2");
-
-        if (!turnInProcess)
-        {                    Debug.Log("333");
-
-            turnInProcess = true;
-            UpdatPlayerCombatState(PlayerCombatState.SetUpPlayerTurn);
-
-        }
-        else
-        {
-
-        }
-
-    }
 
     // to do
     public bool ThisCharacterDead()
@@ -85,28 +84,28 @@ public class PlayerCombatHandler
         switch (newState)
         {
             case PlayerCombatState.Neutral:
-                Debug.Log("1");
+               
                 break;
             case PlayerCombatState.SetUpPlayerTurn:
-                Debug.Log("2");
+
                 SetUpPlayerTurn();
                 break;
             case PlayerCombatState.CheckIfTurnIsOver:
-                Debug.Log("3");
+               
                 CheckIfTurnIsOver();
                 break;
             case PlayerCombatState.MyTurn:
-                Debug.Log("4");
+                
                 HandleMyTurn();
                 break;
 
             case PlayerCombatState.SetUpPlayerEndTurn:
-                Debug.Log("5");
+               
                 SetUpPlayerEndTurn();
                 break;
 
             case PlayerCombatState.EndTurn:
-                Debug.Log("6");
+                
                 HandleEndTurn();
                 break;
             default:
@@ -117,13 +116,14 @@ public class PlayerCombatHandler
     }
     private void HandleMyTurn()
     {
-        Debug.Log(actionsEconomyThisTurn + " and " + actionsEconomyOfPlayer);
+        
 
         AllowedToAct = true;
-        if(!playerCombat.IsHeroPlayer()){
+        if (!playerCombat.IsHeroPlayer())
+        {
             playerCombat.EnemyTurn();
         }
-        
+
     }
     private void SetUpPlayerEndTurn()
     {
@@ -135,12 +135,11 @@ public class PlayerCombatHandler
     }
     private void SetUpPlayerTurn()
     {
-        Debug.Log("setting up");
+
         myTurn = true;
         actionTaken = false;
-        Debug.Log(actionsEconomyThisTurn + " and " + actionsEconomyOfPlayer);
         actionsEconomyThisTurn = actionsEconomyOfPlayer;
-        Debug.Log(actionsEconomyThisTurn + " and " + actionsEconomyOfPlayer);
+
 
         UpdatPlayerCombatState(PlayerCombatState.CheckIfTurnIsOver);
 
@@ -149,7 +148,7 @@ public class PlayerCombatHandler
     {
         turnInProcess = false;
         UpdatPlayerCombatState(PlayerCombatState.Neutral);
-     //   CombatHandler.Instance.UpdateCombatState(CombatHandler.CombatState.Decider);
+        //   CombatHandler.Instance.UpdateCombatState(CombatHandler.CombatState.Decider);
         OnEndturn();
 
     }
@@ -159,49 +158,24 @@ public class PlayerCombatHandler
     }
     public void CheckIfTurnIsOver()
     {
-        Debug.Log("Checking if turn over");
-
         AllowedToAct = false;
-  //      CombatHandler.Instance.UpdateCombatState(CombatHandler.CombatState.Decider);
 
+        if (!DoesCharacterHaveActionsLeft())
+        {
 
+            UpdatPlayerCombatState(PlayerCombatState.SetUpPlayerEndTurn);
 
-        
-            if (!DoesCharacterHaveActionsLeft())
-            {
-                Debug.Log("no actions left ending turn ");
+        }
+        else
+        {
 
-                UpdatPlayerCombatState(PlayerCombatState.SetUpPlayerEndTurn);
+            UpdatPlayerCombatState(PlayerCombatState.MyTurn);
 
-            }
-            else
-            {
-                Debug.Log(actionsEconomyThisTurn + " and " + actionsEconomyOfPlayer);
+        }
 
-                Debug.Log("Turn not over");
-
-                UpdatPlayerCombatState(PlayerCombatState.MyTurn);
-
-            }
-        
 
 
     }
-    public void CharacterTurnSetUP()
-    {
-        actionTaken = false;
-        myTurn = true;
-    }
-
-    // Update stats for turn
-
-    //loop
-    // Update to myTurn
-    // Update to check if myturn over after each action
-    //loop
-
-    // update stats for turn ended
-    // end turn
     public enum PlayerCombatState
     {
         Neutral,
@@ -226,16 +200,22 @@ public class PlayerCombatHandler
     }
     public bool AttackCall(int actionEconomyCost)
     {
-        Debug.Log(actionsEconomyThisTurn);
         return ((actionsEconomyThisTurn - actionEconomyCost) >= 0);
 
 
     }
     public void ActionTaken(int actionEconomyCost)
     {
+      
         actionTaken = true;
         actionsEconomyThisTurn = actionsEconomyThisTurn - actionEconomyCost;
-        UpdatPlayerCombatState(PlayerCombatState.CheckIfTurnIsOver);
+       
+        if(myTurn){
+            UpdatPlayerCombatState(PlayerCombatState.CheckIfTurnIsOver);
+        }else{
+
+        }
+        
     }
 
 }

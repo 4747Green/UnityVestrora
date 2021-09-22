@@ -7,7 +7,7 @@ public class PlayerCombat :  MonoBehaviour
 
 {
     // Start is called before the first frame update
-
+    public bool inCombat;
     public enum PlayerAttackType { Melee, Ranged };
     public PlayerAttackType playerAttackType;
     public PlayerClass player;
@@ -19,6 +19,10 @@ public class PlayerCombat :  MonoBehaviour
     public PlayerCombatHandler playerCombatHandler;
     public CombatActionsHandler combatActionsHandler;
 
+    public event Action OnCharacterStatusChange;
+
+
+
     private void Awake() {
          playerCombatHandler = new PlayerCombatHandler(3,this);
          combatActionsHandler = new CombatActionsHandler(this);
@@ -29,16 +33,10 @@ public class PlayerCombat :  MonoBehaviour
     }
 
 
-   
-
-    public void CharacterTurn(){
-        this.playerCombatHandler.HandleCallForCharacterTurn();
-    }
-   
 
     public void EnemyTurn()
     {
-        Debug.Log("Enenmy Turn attacking 3 times");
+        
         GameObject self = GameObject.FindGameObjectWithTag("Enemy");
         self.GetComponent<SimpleEnemyCombatScript>().FindAndSetPlayerAsTarget();
         self.GetComponent<SimpleEnemyCombatScript>().CombatTurnAction();
@@ -57,7 +55,7 @@ public class PlayerCombat :  MonoBehaviour
     }
 
     public void CallToTakeCombatAction(CombatActionsHandler.ActionTypeState state){
-            Debug.Log("PC got call");
+            
        this.combatActionsHandler.CombatActionCall(state);
     }
 

@@ -38,29 +38,60 @@ public class UIManager : MyManagerBehavior
     public SortedList<int, GameObject> turnOrderUICopy = new SortedList<int, GameObject>();
     public GameObject currentTurnObject;
     public GameObject textMesh;
-   
+
     private void Awake()
     {
         Instance = this;
         GameManager.OnGameStateChanged += GameManagerOnGameStateChanged;
+        CombatManager.OnCombatStateChanged += OnCombatStateChanged;
+        CombatManager.OnCharacterTurn += OnCharacterTurn;
+        CombatManager.OnGameQueueUIReady += OnGameQueueUIReady;
     }
     private void OnDestroy()
     {
         GameManager.OnGameStateChanged -= GameManagerOnGameStateChanged;
+        CombatManager.OnCombatStateChanged -= OnCombatStateChanged;
+        CombatManager.OnCharacterTurn -= OnCharacterTurn;
+
 
     }
+    private void OnGameQueueUIReady(){
+        WipeQueueDrawing();
+        UpdateTurnCounter();
+        DrawQueue();
+        UpdateCurrentTurnUI();
+        SetActiveStateOfCombatUI(true);
+    }
 
-    private void GameManagerOnGameStateChanged(GameState state)
+    private void OnCombatStateChanged(CombatManager.CombatState state)
+    {
+        if((state == CombatManager.CombatState.Victory)|| (state ==  CombatManager.CombatState.Lose)){
+            WipeQueueDrawing();
+            SetActiveStateOfCombatUI(false);
+        }
+        
+
+    }
+    private void OnCharacterTurn(GameObject character)
     {
 
+    }
+    private void GameManagerOnGameStateChanged(GameState state)
+    {
+        if (state == GameState.Combat)
+        {
+            SetActiveStateOfCombatUI(true);
+        }
+
 
 
 
     }
 
-    public void UpdateTurnCounter(){
-       
-     //   textMesh.GetComponent<TextMeshProUGUI>().text = (combatHandler.roundCounter.GetRound().ToString());
+    public void UpdateTurnCounter()
+    {
+
+        textMesh.GetComponent<TextMeshProUGUI>().text = (combatManagerData.round.ToString());
     }
 
     public Sprite GetSpriteFromCharacterGameObject(GameObject character)
@@ -81,26 +112,26 @@ public class UIManager : MyManagerBehavior
     }
     public void DrawQueue()
     {
-    //    Debug.Log("count "+combatSystemHandler.GetTurnOrderQueue().Count);
-    //    GameObject newObj;
-     //   foreach (var item in combatSystemHandler.GetTurnOrderQueue())
-    //    {
-  //          newObj = (GameObject)Instantiate(prefabInnitive, contentWindow.transform, false);
-//
-     //       newObj.transform.Find("CharacterArt").GetComponent<Image>().sprite = GetSpriteFromCharacterGameObject(item);
-       //     newObj.transform.parent = contentWindow.transform;
+    
+        GameObject newObj;
+        foreach (var item in combatManagerData.GetTurnOrderQueue())
+        {
+            newObj = (GameObject)Instantiate(prefabInnitive, contentWindow.transform, false);
+
+            newObj.transform.Find("CharacterArt").GetComponent<Image>().sprite = GetSpriteFromCharacterGameObject(item);
+            newObj.transform.parent = contentWindow.transform;
 
 
 
 
-     //   }
+        }
     }
 
     public void UpdateCurrentTurnUI()
     {
-     //   currentTurnObject.transform.Find("CharacterArt").GetComponent<Image>().sprite =
- //        GetSpriteFromCharacterGameObject(combatHandler.GetCurrentTurnCharacterGameObject());
-   //     currentTurnObject.transform.Find("CharacterName").GetComponent<Text>().text = combatHandler.GetCurrentTurnCharacterGameObject().GetComponent<PlayerClass>().characterName;
+        currentTurnObject.transform.Find("CharacterArt").GetComponent<Image>().sprite =
+             GetSpriteFromCharacterGameObject(combatManager.currentCharacterTurn);
+        currentTurnObject.transform.Find("CharacterName").GetComponent<Text>().text = combatManager.currentCharacterTurn.GetComponent<PlayerClass>().characterName;
 
     }
 
@@ -111,11 +142,13 @@ public class UIManager : MyManagerBehavior
             GameObject.Destroy(child.gameObject);
         }
     }
-    public void SetActiveStateOfCombatUI(bool state){
+    public void SetActiveStateOfCombatUI(bool state)
+    {
+
         combatUI.SetActive(state);
     }
 
-
+    // old
     public void DrawCurrentTurn()
     {
         if (GameObject.Find(currentTurnObject.name) != null)
@@ -123,7 +156,7 @@ public class UIManager : MyManagerBehavior
             Destroy(currentTurnObject);
         }
 
-    //    currentTurnObject = combatHandler.GetCurrentTurnCharacterGameObject();
+        //    currentTurnObject = combatHandler.GetCurrentTurnCharacterGameObject();
 
         GameObject newObj = (GameObject)Instantiate(prefabInnitiveLarge, currentTurnHolder.transform, false);
 

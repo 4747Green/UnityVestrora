@@ -21,7 +21,7 @@ public class GameManager : MyManagerBehavior
     // Update is called once per frame
     void Update()
     {
-
+        
     }
 
     public void UpdateGameState(GameState newState)
