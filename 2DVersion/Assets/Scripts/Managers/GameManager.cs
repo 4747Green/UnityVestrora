@@ -58,7 +58,7 @@ public class GameManager : MyManagerBehavior
 
     private void HandleFreeRoamState()
     {
-        UIManager.Instance.FreeRoamState();
+      //  UIManager.Instance.FreeRoamState();
     }
 
     private void StartCombat()

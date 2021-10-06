@@ -6,6 +6,7 @@ using System;
 public class CombatManager : MyManagerBehavior
 {
     public static CombatManager Instance;
+    
     public CombatState State;
 
     public GameObject currentCharacterTurn;
@@ -37,23 +38,23 @@ public class CombatManager : MyManagerBehavior
 
     private void CharacterDeath(GameObject character)
     {
-        
-        
-        
+
+
+
         combatManagerData.RemoveFromCombat(character);
         OnGameQueueUIReady?.Invoke();
         character.GetComponent<PlayerClass>().OnDeath -= CharacterDeath;
         if (this.combatManagerData.DeathCheckEnemies())
         {
             OnCharacterCallToEndTurn?.Invoke();
-            
+
             UpdateCombatState(CombatState.Victory);
 
 
         }
         else if (this.combatManagerData.DeathCheckPlayers())
         {
-           
+
             OnCharacterCallToEndTurn?.Invoke();
             UpdateCombatState(CombatState.Lose);
         }
@@ -97,6 +98,7 @@ public class CombatManager : MyManagerBehavior
 
     public void UpdateCombatState(CombatState newState)
     {
+        
         State = newState;
         switch (newState)
         {
@@ -119,7 +121,8 @@ public class CombatManager : MyManagerBehavior
 
         OnCombatStateChanged?.Invoke(newState);
     }
-    private void HandleNoCombat(){
+    private void HandleNoCombat()
+    {
 
     }
     private void DecideTurn()
@@ -138,7 +141,7 @@ public class CombatManager : MyManagerBehavior
         else
         {
 
-           
+
             combatManagerData.DequeueTurnOrder();
             currentCharacterTurn = combatManagerData.GetCurrentCharacterTurn();
 
@@ -192,15 +195,9 @@ public class CombatManager : MyManagerBehavior
     public enum CombatState
     {
         NoCombat,
-        BuildingCombat,
-        CombatHandlerState,
         DecideTurn,
-        PlayerTurn,
-        EnemyTurn,
         Victory,
         Lose,
-        MidTurn
-
     }
 }
 

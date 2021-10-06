@@ -131,7 +131,7 @@ public class UIManager : MyManagerBehavior
     {
         currentTurnObject.transform.Find("CharacterArt").GetComponent<Image>().sprite =
              GetSpriteFromCharacterGameObject(combatManager.currentCharacterTurn);
-        currentTurnObject.transform.Find("CharacterName").GetComponent<Text>().text = combatManager.currentCharacterTurn.GetComponent<PlayerClass>().characterName;
+        currentTurnObject.transform.Find("CharacterName").GetComponent<Text>().text = combatManager.currentCharacterTurn.GetComponent<PlayerClass>().characterInformation.name;
 
     }
 
@@ -160,7 +160,7 @@ public class UIManager : MyManagerBehavior
 
         GameObject newObj = (GameObject)Instantiate(prefabInnitiveLarge, currentTurnHolder.transform, false);
 
-        currentCharacterTurn = currentTurnObject.GetComponent<PlayerClass>().characterName;
+        currentCharacterTurn = currentTurnObject.GetComponent<PlayerClass>().characterInformation.name;
 
         newObj.transform.Find("CharacterName").GetComponent<Text>().text = currentCharacterTurn;
 

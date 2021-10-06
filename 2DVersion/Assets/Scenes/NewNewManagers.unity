@@ -5515,6 +5515,7 @@ Transform:
   m_Children:
   - {fileID: 1200872044}
   - {fileID: 789371058}
+  - {fileID: 2033425440}
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -28617,6 +28618,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerClass: {fileID: 1745578016}
+  listOfKeyCodes:
+  - key: 99
+    name: combat
+    keyBindState: 0
+  - key: 101
+    name: Attack
+    keyBindState: 2
+  - key: 100
+    name: Start Dialouge
+    keyBindState: 1
+  - key: 109
+    name: RefeshSkills
+    keyBindState: 3
+  - key: 116
+    name: test
+    keyBindState: 4
 --- !u!114 &1445449344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38965,6 +38982,52 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2023056474}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2033425439
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2033425440}
+  - component: {fileID: 2033425441}
+  m_Layer: 0
+  m_Name: Enemy Handler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2033425440
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033425439}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 169350964}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2033425441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033425439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f58bf24589c1cc489c937b62123a1fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyPrefab: {fileID: 5256749368290956514, guid: 921aeada8b5be5241bc34601d43b031a,
+    type: 3}
+  contentWindow: {fileID: 169350963}
 --- !u!1 &2039599043
 GameObject:
   m_ObjectHideFlags: 0
