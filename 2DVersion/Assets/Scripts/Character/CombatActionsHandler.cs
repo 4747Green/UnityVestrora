@@ -19,9 +19,16 @@ public class CombatActionsHandler
 
     public void CombatActionCall(ActionTypeState newState)
     {
-        if (!processingAction & playerCombat.playerCombatHandler.GetAllowedToAct()){
+        Debug.Log("CAH got call");
+        if (processingAction)
+        {
+            Debug.Log("CAH call while processingAction");
+        }
+        else
+        {
             TakeAction(newState);
         }
+        // if(playerCombat.playerCombatHandler.GetAllowedToAct())
 
 
 
@@ -29,14 +36,18 @@ public class CombatActionsHandler
     }
     private void TakeAction(ActionTypeState newState)
     {
+        Debug.Log("Taking Action");
+        // code here to get cost of actions
         actionCost = 1;
+
         if (playerCombat.playerCombatHandler.AttackCall(1))
         {
+            Debug.Log("Action allowed");
             UpdateActionTypeState(newState);
         }
         else
         {
-            
+            Debug.Log("Action costs too much");
         }
 
     }
@@ -46,14 +57,19 @@ public class CombatActionsHandler
         switch (newState)
         {
             case ActionTypeState.Neutral:
+                //        HandlePlayerDeciderState();
+                Debug.Log("nat");
                 break;
             case ActionTypeState.ActionTakenState:
+                Debug.Log("action being taken state");
                 HandleActionTaken();
                 break;
             case ActionTypeState.MeeleAttack:
+                Debug.Log("ma");
                 AttackRollaAainstArmorClass();
                 processingAction = false;
                 UpdateActionTypeState(ActionTypeState.ActionTakenState);
+
                 break;
             case ActionTypeState.RangeAttack:
                 //        HandlePlayerDeciderState();

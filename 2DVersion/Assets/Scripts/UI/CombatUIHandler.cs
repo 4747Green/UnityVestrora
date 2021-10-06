@@ -11,7 +11,7 @@ public class CombatUIHandler : MonoBehaviour
     public GameObject prefab; // This is our prefab object that will be exposed in the inspector
 
     public int numberToCreate; // number of objects to create. Exposed in inspector
-    public GameObject contentWindow;
+
 
 
     void Start()
@@ -28,14 +28,14 @@ public class CombatUIHandler : MonoBehaviour
     void PopulateInnitive()
     {
         GameObject newObj; // Create GameObject instance
-     
+        Text[] newText;
 
 
 
         for (int i = 0; i < numberToCreate; i++)
         {
             // Create new instances of our prefab until we've created as many as we specified
-            newObj = (GameObject)Instantiate(prefab, contentWindow.transform,false);
+            newObj = (GameObject)Instantiate(prefab, transform);
           
 
             // Randomize the color of our image

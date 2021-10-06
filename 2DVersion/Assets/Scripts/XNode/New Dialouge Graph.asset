@@ -93,7 +93,7 @@ MonoBehaviour:
   entry: 0
   exit: 0
   speakerName: Speaker
-  dialogueLine: Cya
+  dialogueLine: Cye
   sprite: {fileID: 21300000, guid: a338621505e6f6d4ba13b2ae6d5e7422, type: 3}
 --- !u!114 &-6972368138056891033
 MonoBehaviour:
@@ -178,7 +178,7 @@ MonoBehaviour:
   m_Name: Dialouge
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -232, y: -8}
+  position: {x: -232, y: 24}
   ports:
     keys:
     - entry

@@ -5,65 +5,31 @@ using System.Linq;
 using System;
 public class CombatManager : MyManagerBehavior
 {
-    public static CombatManager Instance;
+      public static CombatManager Instance;
     public CombatState State;
 
     public GameObject currentCharacterTurn;
 
-    public static event Action OnCharacterCallToEndTurn;
-    public static event Action OnGameQueueUIReady;
+
     public static event Action<GameObject> OnCharacterTurn;
     public static event Action<CombatState> OnCombatStateChanged;
-    // public static event Action<CombatState> OnCombatStateChanged;
+
 
 
     private void Awake()
     {
-        Instance = this;
-
+                Instance = this;
+                
         GameManager.OnGameStateChanged += GameManagerOnGameStateChanged;
 
 
 
     }
     private void CharacterEndTurn()
-    {
-        currentCharacterTurn.GetComponent<PlayerCombat>().playerCombatHandler.OnEndTurn -= CharacterEndTurn;
+    {               currentCharacterTurn.GetComponent<PlayerCombat>().playerCombatHandler.OnEndTurn -= CharacterEndTurn;
 
         combatManagerData.TurnIncrease();
         UpdateCombatState(CombatState.DecideTurn);
-
-    }
-
-    private void CharacterDeath(GameObject character)
-    {
-        
-        
-        
-        combatManagerData.RemoveFromCombat(character);
-        OnGameQueueUIReady?.Invoke();
-        character.GetComponent<PlayerClass>().OnDeath -= CharacterDeath;
-        if (this.combatManagerData.DeathCheckEnemies())
-        {
-            OnCharacterCallToEndTurn?.Invoke();
-            
-            UpdateCombatState(CombatState.Victory);
-
-
-        }
-        else if (this.combatManagerData.DeathCheckPlayers())
-        {
-           
-            OnCharacterCallToEndTurn?.Invoke();
-            UpdateCombatState(CombatState.Lose);
-        }
-        else
-        {
-
-        }
-
-
-
 
     }
     private void OnDestroy()
@@ -76,9 +42,21 @@ public class CombatManager : MyManagerBehavior
     {
         if (state == GameState.Combat)
         {
-            combatManagerData.InitializeAndFillSortedOrderListAndTurnOrderQueue();
-            combatManagerData.AddCharacterInCombatToPlayerOrEnemyList();
-            SubscribeToCharactersInCombat();
+            // Build
+            // set combat to acive
+
+            // reset
+
+
+            // ResetAllCombatData();
+            //  ResetAllCombatUI();
+            // reset classes
+            // Make the builders reset then build
+
+            // process round
+             combatManagerData.InitializeAndFillSortedOrderListAndTurnOrderQueue();
+             combatManagerData.AddCharacterInCombatToPlayerOrEnemyList();
+
             UpdateCombatState(CombatState.DecideTurn);
 
 
@@ -111,7 +89,6 @@ public class CombatManager : MyManagerBehavior
                 HandleLose();
                 break;
             case CombatState.NoCombat:
-                HandleNoCombat();
                 break;
             default:
                 break;
@@ -119,53 +96,32 @@ public class CombatManager : MyManagerBehavior
 
         OnCombatStateChanged?.Invoke(newState);
     }
-    private void HandleNoCombat(){
 
-    }
     private void DecideTurn()
     {
-        if (this.combatManagerData.DeathCheckEnemies())
+        if ( this.combatManagerData.DeathCheckEnemies())
         {
-
+            Debug.Log("asa");
             UpdateCombatState(CombatState.Victory);
 
         }
-        else if (this.combatManagerData.DeathCheckPlayers())
+        else if ( this.combatManagerData.DeathCheckPlayers())
         {
-
+              Debug.Log("a222sa");
             UpdateCombatState(CombatState.Lose);
         }
         else
         {
-
-           
+              Debug.Log("nnnnnsa");
+              
             combatManagerData.DequeueTurnOrder();
             currentCharacterTurn = combatManagerData.GetCurrentCharacterTurn();
-
+        
             currentCharacterTurn.GetComponent<PlayerCombat>().playerCombatHandler.OnEndTurn += CharacterEndTurn;
-            OnGameQueueUIReady?.Invoke();
+
             OnCharacterTurn?.Invoke(currentCharacterTurn);
         }
 
-    }
-
-    public void SubscribeToCharactersInCombat()
-    {
-        foreach (var item in combatManagerData.GetCharactersInCombat())
-        {
-
-            item.GetComponent<PlayerClass>().OnDeath += CharacterDeath;
-
-        }
-    }
-
-    public void UnsubscribeToCharactersInCombat()
-    {
-        foreach (var item in combatManagerData.GetCharactersInCombat())
-        {
-            item.GetComponent<PlayerClass>().OnDeath -= CharacterDeath;
-
-        }
     }
 
     public void HandleVictory()
@@ -186,8 +142,8 @@ public class CombatManager : MyManagerBehavior
     public bool IsCombatStateNoCombat()
     {
         return (this.State == CombatState.NoCombat);
-
-
+        
+      
     }
     public enum CombatState
     {
